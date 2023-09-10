@@ -32,3 +32,28 @@ To run the game locally, you will need:
 
   ```bash
   git clone https://github.com/silentheller/Unity-Memory-game.git
+### Open the project in Unity
+
+## Customization
+
+You can customize the game by adjusting parameters such as game size and card images within the Unity Editor.
+
+## Credits
+
+- **Developed by:** Abdullah Tariq
+- **Sound effects by:** [Sound Designer Name]
+- **Card images by:** [Artist Name]
+
+## License
+
+This project is licensed under the MIT License.
+
+## Feedback and Contributions
+
+We welcome feedback, bug reports, and contributions. Feel free to open an issue or submit a pull request.
+
+## Support
+
+If you encounter any issues or need assistance, please contact Abdullah Tariq at abdullah.trenzy@gmail.com.
+
+**GitHub Repository:** [https://github.com/silentheller/Unity-Memory-game](https://github.com/silentheller/Unity-Memory-game)
