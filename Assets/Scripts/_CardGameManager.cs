@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class _CardGameManager : MonoBehaviour
 {
@@ -33,11 +34,11 @@ public class _CardGameManager : MonoBehaviour
     private _Card spritePreload;
     // other UI
     [SerializeField]
-    private Text sizeLabel;
+    private TMP_Text sizeLabel;
     [SerializeField]
     private Slider sizeSlider;
     [SerializeField]
-    private Text timeLabel;
+    private TMP_Text timeLabel;
     private float time;
 
     private int spriteSelected;
@@ -82,67 +83,69 @@ public class _CardGameManager : MonoBehaviour
     }
 
     // Initialize cards, size, and position based on size of game
-    private void SetGamePanel(){
-        // if game is odd, we should have 1 card less
-        int isOdd = gameSize % 2 ;
+    private void SetGamePanel()
+    {
+        // Calculate the number of cards to create based on gameSize
+        int totalCards = gameSize * gameSize;
+        int isOdd = gameSize % 2;
+        if (isOdd == 1)
+        {
+            totalCards--;
+        }
 
-        cards = new _Card[gameSize * gameSize - isOdd];
-        // remove all gameobject from parent
+        cards = new _Card[totalCards];
+
+        // Remove all game objects from the parent
         foreach (Transform child in cardList.transform)
         {
             GameObject.Destroy(child.gameObject);
         }
-        // calculate position between each card & start position of each card based on the Panel
-        RectTransform panelsize = panel.transform.GetComponent(typeof(RectTransform)) as RectTransform;
-        float row_size = panelsize.sizeDelta.x;
-        float col_size = panelsize.sizeDelta.y;
-        float scale = 1.0f/gameSize;
-        float xInc = row_size/gameSize;
-        float yInc = col_size/gameSize;
-        float curX = -xInc * (float)(gameSize / 2);
-        float curY = -yInc * (float)(gameSize / 2);
 
-        if(isOdd == 0) {
-            curX += xInc / 2;
-            curY += yInc / 2;
-        }
-        float initialX = curX;
-        // for each in y-axis
+        // Calculate the spacing between cards and the initial position
+        RectTransform panelSize = panel.GetComponent<RectTransform>();
+        float rowSize = panelSize.sizeDelta.x / gameSize;
+        float colSize = panelSize.sizeDelta.y / gameSize;
+        float initialX = -panelSize.sizeDelta.x / 2 + rowSize / 2;
+        float initialY = panelSize.sizeDelta.y / 2 - colSize / 2;
+
+        // Define the scale factor for larger cards
+        float scaleFactor = 1.2f; // Adjust as needed
+
+        // Create and position each card
         for (int i = 0; i < gameSize; i++)
         {
-            curX = initialX;
-            // for each in x-axis
             for (int j = 0; j < gameSize; j++)
             {
-                GameObject c;
-                // if is the last card and game is odd, we instead move the middle card on the panel to last spot
-                if (isOdd == 1 && i == (gameSize - 1) && j == (gameSize - 1))
-                {
-                    int index = gameSize / 2 * gameSize + gameSize / 2;
-                    c = cards[index].gameObject;
-                }
-                else
-                {
-                    // create card prefab
-                    c = Instantiate(prefab);
-                    // assign parent
-                    c.transform.parent = cardList.transform;
+                // Calculate the index
+                int index = i * gameSize + j;
 
-                    int index = i * gameSize + j;
-                    cards[index] = c.GetComponent<_Card>();
-                    cards[index].ID = index;
-                    // modify its size
-                    c.transform.localScale = new Vector3(scale, scale);
+                // Check if it's the last card in an odd-sized game
+                if (isOdd == 1 && index == totalCards - 1)
+                {
+                    // Move the middle card to the last spot
+                    index = (gameSize / 2) * gameSize + gameSize / 2;
                 }
-                // assign location
-                c.transform.localPosition = new Vector3(curX, curY, 0);
-                curX += xInc;
 
+                // Create card prefab
+                GameObject c = Instantiate(prefab);
+                c.transform.parent = cardList.transform;
+
+                // Assign the card component
+                cards[index] = c.GetComponent<_Card>();
+                cards[index].ID = index;
+
+                // Modify the card's size using the scale factor
+                c.transform.localScale = new Vector3(scaleFactor / gameSize, scaleFactor / gameSize);
+
+                // Calculate and assign the card's position
+                float cardX = initialX + j * rowSize;
+                float cardY = initialY - i * colSize;
+                c.transform.localPosition = new Vector3(cardX, cardY, 0);
             }
-            curY += yInc;
         }
-
     }
+
+
     // reset face-down rotation of all cards
     void ResetFace()
     {
@@ -164,7 +167,7 @@ public class _CardGameManager : MonoBehaviour
         int i, j;
         int[] selectedID = new int[cards.Length / 2];
         // sprite selection
-        for (i = 0; i < cards.Length/2; i++)
+        for (i = 0; i < cards.Length / 2; i++)
         {
             // get a random sprite
             int value = Random.Range(0, sprites.Length - 1);
@@ -198,7 +201,8 @@ public class _CardGameManager : MonoBehaviour
 
     }
     // Slider update gameSize
-    public void SetGameSize() {
+    public void SetGameSize()
+    {
         gameSize = (int)sizeSlider.value;
         sizeLabel.text = gameSize + " X " + gameSize;
     }
@@ -272,8 +276,10 @@ public class _CardGameManager : MonoBehaviour
         info.SetActive(i);
     }
     // track elasped time
-    private void Update(){
-        if (gameStart) {
+    private void Update()
+    {
+        if (gameStart)
+        {
             time += Time.deltaTime;
             timeLabel.text = "Time: " + time + "s";
         }
