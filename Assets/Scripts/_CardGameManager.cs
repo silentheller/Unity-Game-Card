@@ -39,21 +39,34 @@ public class _CardGameManager : MonoBehaviour
     private Slider sizeSlider;
     [SerializeField]
     private TMP_Text timeLabel;
+    [SerializeField]
+    private TMP_Text comboText;
+    [SerializeField]
+    private TMP_Text scoreText;
     private float time;
 
     private int spriteSelected;
     private int cardSelected;
     private int cardLeft;
     private bool gameStart;
-
+    //for combos
+    private int comboCount;
+    private int comboMultiplier;
+    private int score;
     void Awake()
     {
         Instance = this;
     }
     void Start()
     {
+
         gameStart = false;
         panel.SetActive(false);
+        //for combo 
+        comboCount = 0;
+        comboMultiplier = 1;
+        score = 0;
+
     }
     // Purpose is to allow preloading of panel, so that it does not lag when it loads
     // Call this in the start method to preload all sprites at start of the script
@@ -226,28 +239,54 @@ public class _CardGameManager : MonoBehaviour
     // card onclick event
     public void cardClicked(int spriteId, int cardId)
     {
-        // first card selected
         if (spriteSelected == -1)
         {
+            // First card selected
             spriteSelected = spriteId;
             cardSelected = cardId;
         }
         else
-        { // second card selected
+        {
+            // Second card selected
             if (spriteSelected == spriteId)
             {
-                //correctly matched
+                // Correctly matched
                 cards[cardSelected].Inactive();
                 cards[cardId].Inactive();
                 cardLeft -= 2;
+
+                // Increase the score based on the combo multiplier (you can adjust the scoring logic)
+                score += 100 * comboMultiplier;
+
+                // Increment the combo count and update the combo multiplier
+                comboCount++;
+                if (comboCount >= 2) // You can adjust this threshold
+                {
+                    comboMultiplier = comboCount; // Set the multiplier to the combo count
+                }
+
+                // Check for the game win
                 CheckGameWin();
             }
             else
             {
-                // incorrectly matched
+                // Incorrectly matched
                 cards[cardSelected].Flip();
                 cards[cardId].Flip();
+
+                // Reset the combo count and multiplier
+                comboCount = 0;
+                comboMultiplier = 1;
+
+                // Deduct points for an incorrect match (you can adjust the scoring logic)
+                score -= 50;
             }
+
+            // Update the UI Text to display the score and combo info
+            scoreText.text = "Score: " + score;
+            comboText.text = "Combo: x" + comboMultiplier; // Create a UI Text component for displaying the combo info
+
+            // Reset selected cards
             cardSelected = spriteSelected = -1;
         }
     }
@@ -281,7 +320,10 @@ public class _CardGameManager : MonoBehaviour
         if (gameStart)
         {
             time += Time.deltaTime;
-            timeLabel.text = "Time: " + time + "s";
+            string formattedTime = string.Format("Time: {0:F2}s", time);
+            timeLabel.text = formattedTime;
+            // Update the UI Text to display combo information
+            comboText.text = "Combo: " + comboCount + "x" + comboMultiplier;
         }
     }
 }
